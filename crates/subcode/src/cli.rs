@@ -164,7 +164,7 @@ async fn run_git_command(
     llm: &LlmRouter,
 ) -> Result<()> {
     use subcode_core::git::GitManager;
-    let git = GitManager::open(".")?;
+    let git = GitManager::open(std::path::Path::new("."))?;
 
     match action {
         GitAction::Status => {

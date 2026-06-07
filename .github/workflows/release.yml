@@ -1,0 +1,102 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build-and-release:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          # Linux x86_64
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            binary_name: subcode-linux-x86_64
+            use_cross: false
+
+          # Linux aarch64 (using cross)
+          - os: ubuntu-22.04
+            target: aarch64-unknown-linux-gnu
+            binary_name: subcode-linux-aarch64
+            use_cross: true
+
+          # macOS arm64
+          - os: macos-14
+            target: aarch64-apple-darwin
+            binary_name: subcode-macos-arm64
+            use_cross: false
+
+          # macOS x86_64
+          - os: macos-13
+            target: x86_64-apple-darwin
+            binary_name: subcode-macos-x86_64
+            use_cross: false
+
+          # Windows x86_64
+          - os: windows-2022
+            target: x86_64-pc-windows-msvc
+            binary_name: subcode-windows-x86_64.exe
+            use_cross: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross
+        if: matrix.use_cross
+        uses: taiki-e/install-action@cross
+
+      - name: Build release binary (native)
+        if: ${{ !matrix.use_cross }}
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Build release binary (cross)
+        if: matrix.use_cross
+        run: cross build --release --target ${{ matrix.target }}
+
+      - name: Strip debug symbols (Unix)
+        if: runner.os != 'Windows' && !matrix.use_cross
+        run: strip target/${{ matrix.target }}/release/subcode
+
+      - name: Strip debug symbols (Unix - cross aarch64)
+        if: runner.os != 'Windows' && matrix.use_cross
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y binutils-aarch64-linux-gnu
+          aarch64-linux-gnu-strip target/${{ matrix.target }}/release/subcode
+
+      - name: Move and rename binary (Unix)
+        if: runner.os != 'Windows'
+        run: mv target/${{ matrix.target }}/release/subcode ${{ matrix.binary_name }}
+
+      - name: Move and rename binary (Windows)
+        if: runner.os == 'Windows'
+        run: mv target/${{ matrix.target }}/release/subcode.exe ${{ matrix.binary_name }}
+
+      - name: Compute SHA256 (Unix)
+        if: runner.os != 'Windows'
+        run: sha256sum ${{ matrix.binary_name }} > ${{ matrix.binary_name }}.sha256
+
+      - name: Compute SHA256 (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          $hash = (Get-FileHash -Path ${{ matrix.binary_name }} -Algorithm SHA256).Hash.ToLower()
+          "$hash  ${{ matrix.binary_name }}" | Out-File -FilePath "${{ matrix.binary_name }}.sha256" -Encoding ascii
+
+      - name: Upload binaries to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ matrix.binary_name }}
+            ${{ matrix.binary_name }}.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

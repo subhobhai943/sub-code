@@ -7,7 +7,6 @@
 
 use std::path::{Path, PathBuf};
 
-use futures::StreamExt;
 use git2::{DiffFormat, DiffOptions, Repository, Signature, StatusOptions};
 
 use crate::{
@@ -232,21 +231,28 @@ impl GitManager {
             following the Conventional Commits specification. \
             Output only the commit message — no explanation, no markdown, no quotes.";
 
-        let user = format!(
+        let user_msg = format!(
             "Write a single-line conventional commit message for the following diff:\n\n```diff\n{diff}\n```"
         );
 
+        let messages = vec![
+            crate::llm::ChatMessage { role: "system".into(), content: system.to_string() },
+            crate::llm::ChatMessage { role: "user".into(), content: user_msg },
+        ];
+
         let mut stream = llm
-            .stream_chat(system, &user)
+            .chat_stream(messages)
             .await
             .map_err(|e| SubcodeError::Llm(e.to_string()))?;
 
         let mut message = String::new();
+        use futures::StreamExt;
+        tokio::pin!(stream);
         while let Some(event) = stream.next().await {
             let event = event.map_err(|e| SubcodeError::Llm(e.to_string()))?;
-            match event {
-                crate::llm::TokenEvent::Token(tok) => message.push_str(&tok),
-                crate::llm::TokenEvent::Done => break,
+            message.push_str(&event.token);
+            if event.done {
+                break;
             }
         }
 

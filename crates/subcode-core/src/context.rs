@@ -2,10 +2,9 @@
 
 use crate::config::Config;
 use crate::error::SubcodeError;
-use crate::llm::ChatMessage;
-use anyhow::Result;
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use std::collections::HashMap;
+use std::fmt::Write;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -124,13 +123,27 @@ impl ProjectContext {
     fn spawn_watcher(root: PathBuf, ignore_file: String, index: Arc<RwLock<CodeIndex>>) -> Result<(), SubcodeError> {
         let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
 
-        // Native watcher runs on a dedicated thread.
-        std::thread::spawn(move || {
-            let mut watcher: RecommendedWatcher = Watcher::new(tx, std::time::Duration::from_secs(1)).expect("watcher");
-            watcher.watch(&root, RecursiveMode::Recursive).expect("watch");
-        });
+        // notify v6 uses an event-handler closure.
+        let sender = tx.clone();
+        let mut watcher = RecommendedWatcher::new(
+            move |res: Result<notify::Event, notify::Error>| {
+                if let Ok(event) = res {
+                    let _ = sender.send(event);
+                }
+            },
+            notify::Config::default(),
+        )
+        .map_err(|e| SubcodeError::Context(format!("file watcher init: {e}")))?;
 
+        let watch_root = root.clone();
+        watcher
+            .watch(&watch_root, RecursiveMode::Recursive)
+            .map_err(|e| SubcodeError::Context(format!("file watcher start: {e}")))?;
+
+        // Keep the watcher alive in a dedicated task.
         tokio::spawn(async move {
+            // Hold onto the watcher so it is not dropped.
+            let _watcher = watcher;
             while let Some(_event) = rx.recv().await {
                 // For now we re-scan everything; later we can do targeted updates.
                 if let Err(err) = Self::index_tree(&root, &ignore_file, &index).await {

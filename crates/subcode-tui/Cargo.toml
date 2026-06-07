@@ -1,0 +1,17 @@
+# SUB CODE — AI Coding Assistant | Author: subhobhai | License: MIT
+[package]
+name        = "subcode-tui"
+version.workspace    = true
+edition.workspace    = true
+authors.workspace    = true
+license.workspace    = true
+description = "SUB CODE terminal user interface (ratatui + crossterm)"
+
+[dependencies]
+subcode-core   = { path = "../subcode-core" }
+tokio          = { workspace = true }
+ratatui        = { workspace = true }
+crossterm      = { workspace = true }
+anyhow         = { workspace = true }
+tracing        = { workspace = true }
+futures        = { workspace = true }

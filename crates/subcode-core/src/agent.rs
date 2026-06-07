@@ -6,6 +6,7 @@ use crate::llm::{ChatMessage, LlmRouter};
 use crate::tools::{Tool, ToolResult};
 use crate::context::ProjectContext;
 use async_trait::async_trait;
+use futures::StreamExt;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
