@@ -1,0 +1,34 @@
+# SUB CODE — AI Coding Assistant | Author: subhobhai | License: MIT
+[package]
+name        = "subcode-core"
+version.workspace    = true
+edition.workspace    = true
+authors.workspace    = true
+license.workspace    = true
+description = "SUB CODE core engine: agent, LLM, context, tools, git, shell, plugin"
+
+[dependencies]
+tokio          = { workspace = true }
+reqwest        = { workspace = true }
+serde          = { workspace = true }
+serde_json     = { workspace = true }
+toml           = { workspace = true }
+anyhow         = { workspace = true }
+thiserror      = { workspace = true }
+git2           = { workspace = true }
+notify         = { workspace = true }
+wasmtime       = { workspace = true }
+libloading     = { workspace = true }
+async-trait    = { workspace = true }
+dirs           = { workspace = true }
+syntect        = { workspace = true }
+tracing        = { workspace = true }
+keyring        = { workspace = true }
+uuid           = { workspace = true }
+chrono         = { workspace = true }
+regex          = { workspace = true }
+walkdir        = { workspace = true }
+ignore         = { workspace = true }
+bytes          = { workspace = true }
+futures        = { workspace = true }
+tokio-util     = { workspace = true }
