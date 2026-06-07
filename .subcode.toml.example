@@ -1,0 +1,45 @@
+# SUB CODE — AI Coding Assistant | Author: subhobhai | License: MIT
+# Copy to .subcode.toml in your project root and customise.
+
+[project]
+name        = "my-project"          # Display name shown in TUI status bar
+language    = "rust"                # Primary language (auto-detected if omitted)
+
+[llm]
+backend     = "ollama"              # ollama | lmstudio | llamacpp | openai | anthropic
+endpoint    = "http://localhost:11434"
+model       = "llama3.2:8b"         # Any model installed in Ollama
+context_window = 128000             # Token limit for this model
+temperature = 0.2                   # Lower = more deterministic code output
+stream      = true                  # Always stream tokens
+
+# Optional per-project profile override
+# profile     = "local-fast"         # Defined in ~/.subcode/config.toml
+
+[agent]
+mode        = "interactive"         # interactive | autonomous (--yolo)
+approval_timeout_secs = 30         # Seconds before auto-denying a shell command
+max_steps   = 25                    # Max ReAct loop iterations per task
+
+[context]
+max_tokens  = 32000                 # Max tokens injected as codebase context
+embeddings  = false                 # Enable local vector embeddings (requires model)
+watch       = true                  # Filesystem watcher — incremental re-index
+ignore_file = ".subcodeignore"      # Additional ignore rules (stacks with .gitignore)
+
+[shell]
+allowlist   = [                     # Only these commands can be executed
+  "cargo", "git", "npm", "npx",
+  "python", "python3", "pip",
+  "rustfmt", "clippy", "ruff",
+  "ls", "cat", "grep", "find",
+]
+denylist    = ["rm -rf /", "sudo", "chmod 777"]
+
+[plugins]
+enabled     = ["docker", "github-cli"]
+
+[ui]
+theme       = "dark"                # dark | light
+show_reasoning = true               # Expand agent reasoning steps
+syntax_highlight = true

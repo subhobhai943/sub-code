@@ -1,0 +1,14 @@
+# SUB CODE — AI Coding Assistant | Author: subhobhai | License: MIT
+target/
+*.subcode-session
+.subcode/sessions/
+dist/
+*.so
+*.dll
+*.dylib
+*.wasm
+!plugins/*/pkg/*.wasm
+.env
+*.key
+**/*.lock
+!Cargo.lock

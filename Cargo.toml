@@ -1,0 +1,50 @@
+# SUB CODE — AI Coding Assistant | Author: subhobhai | License: MIT
+[workspace]
+members = [
+    "crates/subcode",
+    "crates/subcode-core",
+    "crates/subcode-tui",
+    "crates/subcode-plugin-sdk",
+]
+resolver = "2"
+
+[workspace.package]
+version      = "0.1.0"
+edition      = "2021"
+authors      = ["subhobhai <subhobhai943@github.com>"]
+license      = "MIT"
+repository   = "https://github.com/subhobhai943/sub-code"
+homepage     = "https://github.com/subhobhai943/sub-code"
+description  = "Terminal-native AI coding assistant"
+
+[workspace.dependencies]
+tokio          = { version = "1",    features = ["full"] }
+reqwest        = { version = "0.12", features = ["json", "stream"] }
+serde          = { version = "1",    features = ["derive"] }
+serde_json     = "1"
+toml           = "0.8"
+clap           = { version = "4",    features = ["derive"] }
+ratatui        = "0.26"
+crossterm      = "0.27"
+thiserror      = "1"
+anyhow         = "1"
+git2           = "0.19"
+notify         = "6"
+wasmtime       = "18"
+libloading     = "0.8"
+async-trait    = "0.1"
+dirs           = "5"
+syntect        = "5"
+tracing        = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+keyring        = "2"
+abi_stable     = "0.11"
+uuid           = { version = "1",    features = ["v4"] }
+chrono         = { version = "0.4",  features = ["serde"] }
+regex          = "1"
+walkdir        = "2"
+ignore         = "0.4"
+tree-sitter    = "0.22"
+bytes          = "1"
+futures        = "0.3"
+tokio-util     = { version = "0.7", features = ["codec"] }
