@@ -40,8 +40,15 @@ CHECKSUM_URL="${DOWNLOAD_URL}.sha256"
 mkdir -p "$BIN_DIR"
 
 echo "Downloading ${BINARY_NAME}..."
-curl -sSL "$DOWNLOAD_URL" -o "$BIN_DIR/subcode"
-curl -sSL "$CHECKSUM_URL" -o "$BIN_DIR/subcode.sha256"
+if ! curl -fsSL "$DOWNLOAD_URL" -o "$BIN_DIR/subcode"; then
+    echo "Error: Failed to download binary from $DOWNLOAD_URL"
+    echo "The release might not exist yet, or your architecture/OS is not supported."
+    exit 1
+fi
+if ! curl -fsSL "$CHECKSUM_URL" -o "$BIN_DIR/subcode.sha256"; then
+    echo "Error: Failed to download checksum from $CHECKSUM_URL"
+    exit 1
+fi
 
 echo "Verifying checksum..."
 cd "$BIN_DIR"
